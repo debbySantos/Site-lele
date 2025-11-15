@@ -1,222 +1,193 @@
 <!DOCTYPE html>
+
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Park Pay - Gestão de Vagas</title>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Leaflet.js (Para Mapa Funcional) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Park Pay - Gestão de Vagas</title>
 
-    <!-- QR Code Generator Lib -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.js"></script>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Configuração do Tailwind (Paleta Roxa) -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+<!-- Leaflet.js (Para Mapa Funcional) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- QR Code Generator Lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.js"></script>
+
+<!-- Configuração do Tailwind (Paleta Roxa) -->
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                },
+                colors: {
+                    primary: {
+                        DEFAULT: '#7F00B2', // Roxo principal (da logo)
+                        light: '#9E47D1', // Roxo claro
+                        dark: '#6A0099',  // Roxo escuro
                     },
-                    colors: {
-                        primary: {
-                            DEFAULT: '#7F00B2', // Roxo principal (da logo)
-                            light: '#9E47D1', // Roxo claro
-                            dark: '#6A0099',  // Roxo escuro
-                        },
-                        secondary: {
-                            DEFAULT: '#FBBF24', // Amarelo/Dourado
-                        },
-                        // Cor de fundo clara para a barra lateral
-                        sidebar_bg: '#E9D5FF' // Lilás claro (purple-200)
-                    }
+                    secondary: {
+                        DEFAULT: '#FBBF24', // Amarelo/Dourado
+                    },
+                    // Cor de fundo clara para a barra lateral
+                    sidebar_bg: '#E9D5FF' // Lilás claro (purple-200)
                 }
             }
         }
-    </script>
-    
-    <!-- Estilos personalizados -->
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Fundo da barra lateral lilás claro */
-        nav.bg-sidebar {
-            background-color: #E9D5FF; 
-        }
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            color: #4B0082; /* Roxo escuro para texto */
-        }
-        .sidebar-link svg {
-             color: #4B0082; /* Roxo escuro para ícones */
-        }
-        .sidebar-link:hover {
-            background-color: #D8B4FE; /* purple-300 */
-            color: #370061;
-        }
-        .sidebar-link:hover svg {
-             color: #370061;
-        }
-        .sidebar-link.active {
-            background-color: #7F00B2; /* Roxo primário */
-            color: #FFFFFF;
-            box-shadow: 0 4px 6px -1px rgb(99 30 150 / 0.2), 0 2px 4px -2px rgb(99 30 150 / 0.1);
-        }
-        .sidebar-link.active svg {
-            color: #FFFFFF;
-        }
-        
-        /* --- CORREÇÃO DE LAYOUT MOBILE --- */
-        /* Define a altura total do cabeçalho fixo mobile (Logo + Nav) */
-        @media (max-width: 768px) {
-            #mobile-header-logo { height: 4rem; /* h-16 */ }
-            #mobile-nav-bar { height: 4rem; /* h-16 */ }
-            
-            /* Ajusta o padding-top do main-content para a soma das duas barras (8rem = pt-32) */
-            /* Esta é a correção principal */
-            main.pt-20 {
-                padding-top: 8rem !important; /* pt-32 */
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar-link span {
-                display: none;
-            }
-            .sidebar-link {
-                justify-content: center;
-            }
-            #logo-text {
-                display: none;
-            }
-        }
-        .content-fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    }
+</script>
 
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
+<!-- Estilos personalizados -->
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+    /* Fundo da barra lateral lilás claro */
+    nav.bg-sidebar {
+        background-color: #E9D5FF; 
+    }
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        color: #4B0082; /* Roxo escuro para texto */
+    }
+    .sidebar-link svg {
+         color: #4B0082; /* Roxo escuro para ícones */
+    }
+    .sidebar-link:hover {
+        background-color: #D8B4FE; /* purple-300 */
+        color: #370061;
+    }
+    .sidebar-link:hover svg {
+         color: #370061;
+    }
+    .sidebar-link.active {
+        background-color: #7F00B2; /* Roxo primário */
+        color: #FFFFFF;
+        box-shadow: 0 4px 6px -1px rgb(99 30 150 / 0.2), 0 2px 4px -2px rgb(99 30 150 / 0.1);
+    }
+    .sidebar-link.active svg {
+        color: #FFFFFF;
+    }
+    
+    /* --- CORREÇÃO DE LAYOUT MOBILE --- */
+    /* Define a altura total do cabeçalho fixo mobile (Logo + Nav) */
+    @media (max-width: 768px) {
+        #mobile-header-logo { height: 4rem; /* h-16 */ }
+        #mobile-nav-bar { height: 4rem; /* h-16 */ }
+        
+        /* Ajusta o padding-top do main-content para a soma das duas barras (8rem = pt-32) */
+        /* Esta é a correção principal */
+        main.pt-20 {
+            padding-top: 8rem !important; /* pt-32 */
         }
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            width: 90%;
-            max-width: 500px;
-        }
-        #manobrista-fields {
+    }
+    
+    @media (max-width: 768px) {
+        .sidebar-link span {
             display: none;
         }
-        #qrcode-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        .sidebar-link {
+            justify-content: center;
         }
-    </style>
+        #logo-text {
+            display: none;
+        }
+    }
+    .content-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+    }
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 0.75rem;
+        width: 90%;
+        max-width: 500px;
+    }
+    #manobrista-fields {
+        display: none;
+    }
+    #qrcode-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+</style>
+
+
 </head>
 <body class="bg-gray-100">
 
-    <!-- Overlay de Carregamento -->
-    <div id="loading-overlay" class="modal-overlay">
-        <div class="text-white text-xl font-semibold">Carregando Park Pay...</div>
-    </div>
+<!-- Overlay de Carregamento -->
+<div id="loading-overlay" class="modal-overlay">
+    <div class="text-white text-xl font-semibold">Carregando Park Pay...</div>
+</div>
 
-    <!-- Modal de Cadastro -->
-    <div id="registration-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4">Bem-vindo(a) ao Park Pay!</h2>
-            <p class="mb-6 text-gray-600">Crie sua conta para começar.</p>
-            <form id="registration-form">
-                <div class="mb-4">
-                    <label for="reg-nome" class="block text-sm font-medium text-gray-700 mb-1">Seu Nome</label>
-                    <input type="text" id="reg-nome" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+<!-- Modal de Cadastro -->
+<div id="registration-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h2 class="text-2xl font-bold mb-4">Bem-vindo(a) ao Park Pay!</h2>
+        <p class="mb-6 text-gray-600">Crie sua conta para começar.</p>
+        <form id="registration-form">
+            <div class="mb-4">
+                <label for="reg-nome" class="block text-sm font-medium text-gray-700 mb-1">Seu Nome</label>
+                <input type="text" id="reg-nome" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <div class="mb-4">
+                <label for="reg-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" id="reg-email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+             <div class="mb-4">
+                <label for="reg-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <input type="password" id="reg-senha" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Qual seu perfil inicial?</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center p-4 border rounded-lg flex-1 cursor-pointer">
+                        <input type="radio" name="userType" value="cliente" class="text-primary focus:ring-primary" checked>
+                        <span class="ml-3 font-medium">Sou Cliente</span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg flex-1 cursor-pointer">
+                        <input type="radio" name="userType" value="manobrista" class="text-primary focus:ring-primary">
+                        <span class="ml-3 font-medium">Sou Manobrista</span>
+                    </label>
                 </div>
-                <div class="mb-4">
-                    <label for="reg-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" id="reg-email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
+            </div>
+
+            <!-- Campos Específicos do Manobrista -->
+            <div id="manobrista-fields" class="mb-4 space-y-4 p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-semibold text-gray-800">Dados de Manobrista</h3>
                  <div class="mb-4">
-                    <label for="reg-senha" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                    <input type="password" id="reg-senha" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label for="reg-cnh" class="block text-sm font-medium text-gray-700 mb-1">Número da CNH</label>
+                    <input type="text" id="reg-cnh" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                 </div>
-
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Qual seu perfil inicial?</label>
-                    <div class="flex gap-4">
-                        <label class="flex items-center p-4 border rounded-lg flex-1 cursor-pointer">
-                            <input type="radio" name="userType" value="cliente" class="text-primary focus:ring-primary" checked>
-                            <span class="ml-3 font-medium">Sou Cliente</span>
-                        </label>
-                        <label class="flex items-center p-4 border rounded-lg flex-1 cursor-pointer">
-                            <input type="radio" name="userType" value="manobrista" class="text-primary focus:ring-primary">
-                            <span class="ml-3 font-medium">Sou Manobrista</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Campos Específicos do Manobrista -->
-                <div id="manobrista-fields" class="mb-4 space-y-4 p-4 border border-gray-200 rounded-lg">
-                    <h3 class="font-semibold text-gray-800">Dados de Manobrista</h3>
-                     <div class="mb-4">
-                        <label for="reg-cnh" class="block text-sm font-medium text-gray-700 mb-1">Número da CNH</label>
-                        <input type="text" id="reg-cnh" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div class="mb-4">
-                        <label for="reg-cnh-categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoria CNH</label>
-                        <select id="reg-cnh-categoria" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="AB">AB</option>
-                            <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label for="reg-veiculo" class="block text-sm font-medium text-gray-700 mb-1">Modelo do Veículo</label>
-                        <input type="text" id="reg-veiculo" placeholder="Ex: Honda Civic" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary-dark">Criar Conta</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Modal de Upgrade para Manobrista -->
-    <div id="valet-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4">Torne-se um Manobrista</h2>
-            <p class="mb-6 text-gray-600">Complete seu cadastro para começar a aceitar manobras.</p>
-            <form id="valet-upgrade-form">
-                <div class="mb-4">
-                    <label for="valet-cnh" class="block text-sm font-medium text-gray-700 mb-1">Número da CNH</label>
-                    <input type="text" id="valet-cnh" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                 <div class="mb-4">
-                    <label for="valet-cnh-categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoria CNH</label>
-                    <select id="valet-cnh-categoria" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label for="reg-cnh-categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoria CNH</label>
+                    <select id="reg-cnh-categoria" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="A">A</option>
                         <option value="B">B</option>
                         <option value="AB">AB</option>
@@ -226,340 +197,366 @@
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label for="valet-veiculo" class="block text-sm font-medium text-gray-700 mb-1">Modelo do Veículo</label>
-                    <input type="text" id="valet-veiculo" placeholder="Ex: Honda Civic" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">Concluir Cadastro</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Confirmação -->
-    <div id="confirmation-modal" class="modal-overlay hidden">
-        <div class="modal-content text-center">
-            <h2 id="confirmation-title" class="text-2xl font-bold mb-4 text-primary"></h2>
-            <p id="confirmation-message" class="mb-6 text-gray-600"></p>
-            <button id="close-confirmation-modal" class="w-full bg-primary text-white py-2 rounded-lg font-bold hover:bg-primary-dark">Fechar</button>
-        </div>
-    </div>
-
-
-    <!-- Conteúdo Principal da Aplicação -->
-    <div id="app-container" class="flex h-screen overflow-hidden hidden">
-        
-        <!-- BARRA LATERAL (Desktop) / CABEÇALHO (Mobile) -->
-        <!-- Fundo lilás 'bg-sidebar'. No mobile, é um cabeçalho fixo (fixed) com z-index (z-10). No desktop, é relativo. -->
-        <nav class="w-full md:w-64 bg-sidebar flex flex-col fixed md:relative z-10 md:z-0">
-            
-            <!-- Barra da Logo (h-16) -->
-            <div id="mobile-header-logo" class="flex items-center justify-between p-4 h-16 shadow-md">
-                <div class="flex items-center space-x-3">
-                    <!-- SVG ATUALIZADO para se parecer com a logo complexa -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 28 28" class="w-8 h-8">
-                        <!-- Hexágonos de fundo (pretos) -->
-                        <path d="M8.5 7 L11.5 2 L14.5 2 L17.5 7 L14.5 12 L11.5 12 Z" fill="none" stroke="#000" stroke-width="0.7" opacity="0.8"/>
-                        <path d="M3 14 L6 9 L9 9 L12 14 L9 19 L6 19 Z" fill="none" stroke="#000" stroke-width="0.7" opacity="0.8"/>
-                        <path d="M14 21 L17 16 L20 16 L23 21 L20 26 L17 26 Z" fill="none" stroke="#000" stroke-width="0.7" opacity="0.8"/>
-                        <!-- Hexágono principal (roxo) -->
-                        <path d="M23.66 11.34a4 4 0 0 0-3.32-2.34H11.66a4 4 0 0 0-3.32 2.34L6.26 15l2.08 3.66a4 4 0 0 0 3.32 2.34h8.68a4 4 0 0 0 3.32-2.34L25.74 15l-2.08-3.66Z" fill="#7F00B2" transform="translate(-2 -1)" /> 
-                        <!-- Letra P (branca) -->
-                        <path d="M14 11v8h2.5c2.5 0 4.5-2 4.5-4s-2-4-4.5-4H14Zm2 2h0.5c1.4 0 2.5 1.1 2.5 2.5S17.9 16 16.5 16H16v-5Z" fill="#FFFFFF" transform="translate(-2 -1)" />
-                        <!-- Sombra da P (preta) -->
-                        <path d="M14 11v8h-1v-8h1Z" fill="#000000" transform="translate(-2 -1)" />
-                    </svg>
-                    <!-- Texto da logo roxo escuro -->
-                    <span id="logo-text" class="text-2xl font-bold text-primary-dark">Park Pay</span>
+                    <label for="reg-veiculo" class="block text-sm font-medium text-gray-700 mb-1">Modelo do Veículo</label>
+                    <input type="text" id="reg-veiculo" placeholder="Ex: Honda Civic" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                 </div>
             </div>
 
-            <!-- Navegação Principal (h-16 no mobile) -->
-            <!-- No mobile, esta é a barra de ícones inferior. No desktop, é a lista principal. -->
-            <ul id="mobile-nav-bar" class="flex flex-row md:flex-col p-2 md:p-4 space-x-1 md:space-x-0 md:space-y-2 overflow-x-auto md:overflow-y-auto flex-grow h-16 md:h-auto">
-                <li id="nav-inicio"></li>
-                <li id="nav-eventos"></li>
-                <li id="nav-mapa"></li>
-                <li id="nav-recompensas"></li>
-                <li id="nav-reservas" class="hidden"></li> <!-- Cliente -->
-                <li id="nav-manobras" class="hidden"></li> <!-- Manobrista -->
-                <li id="nav-avaliacoes" class="hidden"></li> <!-- Manobrista -->
-                <li>
-                    <a href="#" data-page="perfil" class="sidebar-link nav-link">
-                        <svg id="icon-perfil" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span class="font-semibold">Perfil</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- Área de Conteúdo Principal -->
-        <!-- CORREÇÃO: pt-32 (8rem) no mobile para compensar h-16 + h-16 do cabeçalho fixo -->
-        <main class="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8 pt-32 md:pt-8">
-            <div id="main-content-area" class="content-fade-in">
-                <!-- O conteúdo da página é renderizado aqui -->
-            </div>
-        </main>
+            <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary-dark">Criar Conta</button>
+        </form>
     </div>
+</div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Importar Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<!-- Modal de Upgrade para Manobrista -->
+<div id="valet-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h2 class="text-2xl font-bold mb-4">Torne-se um Manobrista</h2>
+        <p class="mb-6 text-gray-600">Complete seu cadastro para começar a aceitar manobras.</p>
+        <form id="valet-upgrade-form">
+            <div class="mb-4">
+                <label for="valet-cnh" class="block text-sm font-medium text-gray-700 mb-1">Número da CNH</label>
+                <input type="text" id="valet-cnh" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+             <div class="mb-4">
+                <label for="valet-cnh-categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoria CNH</label>
+                <select id="valet-cnh-categoria" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="valet-veiculo" class="block text-sm font-medium text-gray-700 mb-1">Modelo do Veículo</label>
+                <input type="text" id="valet-veiculo" placeholder="Ex: Honda Civic" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">Concluir Cadastro</button>
+        </form>
+    </div>
+</div>
 
-        // --- ÍCONES SVG (Lucide) ---
-        const icons = {
-            home: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-            calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>`,
-            map: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M14.106 5.553a2 2 0 0 0-2.212 0l-6.502 4.219A2 2 0 0 0 4.5 11.472v6.056a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6.056a2 2 0 0 0-.894-1.699l-6.502-4.22z"/><path d="M12 22V12"/><path d="m4.5 11.472 7.5 4.853 7.5-4.853"/><path d="M4.5 11.472V4.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v6.972"/></svg>`,
-            award: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`,
-            reservas: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="m9 14 2 2 4-4"/></svg>`,
-            manobras: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C20.7 7.6 16 2 16 2l-3.9 3.9c-.6.6-1.5.6-2.1 0L6 2s-4.7 5.6-4.5 9.1c-.8.2-1.5 1-1.5 1.9v3c0 .6.4 1 1 1h2"/><path d="M12 17v-5"/><path d="M-3 15C.5 10.5 5.5 8 12 8s11.5 2.5 15 7"/></svg>`,
-            avaliacoes: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-            back: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`
-        };
+<!-- Modal de Confirmação -->
+<div id="confirmation-modal" class="modal-overlay hidden">
+    <div class="modal-content text-center">
+        <h2 id="confirmation-title" class="text-2xl font-bold mb-4 text-primary"></h2>
+        <p id="confirmation-message" class="mb-6 text-gray-600"></p>
+        <button id="close-confirmation-modal" class="w-full bg-primary text-white py-2 rounded-lg font-bold hover:bg-primary-dark">Fechar</button>
+    </div>
+</div>
 
-        // --- DADOS MOCK (Simulação de DB) ---
-        const mockData = {
-            reservas: [
-                { id: 1, local: "Shopping Morumbi", data: "2025-11-20", status: "Confirmada", qrCode: '{"eventoId":12,"local":"Shopping Morumbi"}' },
-                { id: 2, local: "Show 'Rock Fest'", data: "2025-11-15", status: "Realizada", qrCode: '{"eventoId":10,"local":"Show \'Rock Fest\'"}' },
-            ],
-            eventos: [
-                { id: 10, nome: "Show 'Rock Fest'", local: "Arena Central", data: "2025-11-15", vagas: "Poucas", coords: [-23.5580, -46.7031], valorManobra: 50.00 },
-                { id: 11, nome: "Final Campeonato", local: "Estádio Principal", data: "2025-11-22", vagas: "Disponível", coords: [-23.5413, -46.6654], valorManobra: 45.00 },
-                { id: 12, nome: "Shopping Morumbi", local: "Shopping Morumbi", data: "Vagas", vagas: "Disponível", coords: [-23.6215, -46.7238], valorManobra: 30.00 },
-            ],
-            manobras: [
-                { id: 1, local: "Show 'Rock Fest'", data: "2025-11-15", valor: 50.00, cliente: "Ana Silva" },
-                { id: 2, local: "Cliente Avulso (Mapa)", data: "2025-11-14", valor: 25.00, cliente: "Marcos P." },
-            ],
-            avaliacoes: [
-                { id: 1, cliente: "Ana S.", nota: 5, comentario: "Muito rápido e prestativo!" },
-                { id: 2, cliente: "Marcos P.", nota: 4, comentario: "Bom serviço." },
-            ],
-            mapaClientes: [
-                { id: 1, local: "Rua Augusta, 123", distancia: "500m", coords: [-23.5518, -46.6500], valorManobra: 25.00 },
-                { id: 2, local: "Av. Paulista, 1000", distancia: "1.2km", coords: [-23.5641, -46.6522], valorManobra: 30.00 },
-            ],
-            recompensas: [
-                { id: 1, parceiro: "Amazon", tipo: "Cupom R$ 50", custo: 1000 },
-                { id: 2, parceiro: "Shopee", tipo: "Cupom R$ 30", custo: 700 },
-            ]
-        };
 
-        // --- ESTADO GLOBAL DA APLICAÇÃO ---
-        let state = {
-            currentUserType: null,
-            currentPage: 'inicio',
-            previousPage: 'inicio', // Salva a página anterior
-            currentPageParams: {}, 
-            isFirebaseReady: false,
-            userData: null, 
-            userId: null
-        };
+<!-- Conteúdo Principal da Aplicação -->
+<div id="app-container" class="flex h-screen overflow-hidden hidden">
+    
+    <!-- BARRA LATERAL (Desktop) / CABEÇALHO (Mobile) -->
+    <!-- Fundo lilás 'bg-sidebar'. No mobile, é um cabeçalho fixo (fixed) com z-index (z-10). No desktop, é relativo. -->
+    <nav class="w-full md:w-64 bg-sidebar flex flex-col fixed md:relative z-10 md:z-0">
         
-        let mapInstance = null;
+        <!-- Barra da Logo (h-16) -->
+        <div id="mobile-header-logo" class="flex items-center justify-between p-4 h-16 shadow-md">
+            <div class="flex items-center space-x-3">
+                <!-- SVG ATUALIZADO para se parecer com a logo complexa -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 28 28" class="w-8 h-8">
+                    <!-- Hexágonos de fundo (pretos) -->
+                    <path d="M8.5 7 L11.5 2 L14.5 2 L17.5 7 L14.5 12 L11.5 12 Z" fill="none" stroke="#000" stroke-width="0.7" opacity="0.8"/>
+                    <path d="M3 14 L6 9 L9 9 L12 14 L9 19 L6 19 Z" fill="none" stroke="#000" stroke-width="0.7" opacity="0.8"/>
+                    <path d="M14 21 L17 16 L20 16 L23 21 L20 26 L17 26 Z" fill="none" stroke="#000" stroke-width="0.7" opacity="0.8"/>
+                    <!-- Hexágono principal (roxo) -->
+                    <path d="M23.66 11.34a4 4 0 0 0-3.32-2.34H11.66a4 4 0 0 0-3.32 2.34L6.26 15l2.08 3.66a4 4 0 0 0 3.32 2.34h8.68a4 4 0 0 0 3.32-2.34L25.74 15l-2.08-3.66Z" fill="#7F00B2" transform="translate(-2 -1)" /> 
+                    <!-- Letra P (branca) -->
+                    <path d="M14 11v8h2.5c2.5 0 4.5-2 4.5-4s-2-4-4.5-4H14Zm2 2h0.5c1.4 0 2.5 1.1 2.5 2.5S17.9 16 16.5 16H16v-5Z" fill="#FFFFFF" transform="translate(-2 -1)" />
+                    <!-- Sombra da P (preta) -->
+                    <path d="M14 11v8h-1v-8h1Z" fill="#000000" transform="translate(-2 -1)" />
+                </svg>
+                <!-- Texto da logo roxo escuro -->
+                <span id="logo-text" class="text-2xl font-bold text-primary-dark">Park Pay</span>
+            </div>
+        </div>
 
-        // --- VARIÁVEIS DO FIREBASE ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        let app, db, auth;
+        <!-- Navegação Principal (h-16 no mobile) -->
+        <!-- No mobile, esta é a barra de ícones inferior. No desktop, é a lista principal. -->
+        <ul id="mobile-nav-bar" class="flex flex-row md:flex-col p-2 md:p-4 space-x-1 md:space-x-0 md:space-y-2 overflow-x-auto md:overflow-y-auto flex-grow h-16 md:h-auto">
+            <li id="nav-inicio"></li>
+            <li id="nav-eventos"></li>
+            <li id="nav-mapa"></li>
+            <li id="nav-recompensas"></li>
+            <li id="nav-reservas" class="hidden"></li> <!-- Cliente -->
+            <li id="nav-manobras" class="hidden"></li> <!-- Manobrista -->
+            <li id="nav-avaliacoes" class="hidden"></li> <!-- Manobrista -->
+            <li>
+                <a href="#" data-page="perfil" class="sidebar-link nav-link">
+                    <svg id="icon-perfil" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="font-semibold">Perfil</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
-        // --- SELETORES DE DOM ---
-        const mainContent = document.getElementById('main-content-area');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const registrationModal = document.getElementById('registration-modal');
-        const registrationForm = document.getElementById('registration-form');
-        const valetModal = document.getElementById('valet-modal');
-        const valetUpgradeForm = document.getElementById('valet-upgrade-form');
-        const appContainer = document.getElementById('app-container');
-        const manobristaFields = document.getElementById('manobrista-fields');
-        const confirmationModal = document.getElementById('confirmation-modal');
+    <!-- Área de Conteúdo Principal -->
+    <!-- CORREÇÃO: pt-32 (8rem) no mobile para compensar h-16 + h-16 do cabeçalho fixo -->
+    <main class="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8 pt-32 md:pt-8">
+        <div id="main-content-area" class="content-fade-in">
+            <!-- O conteúdo da página é renderizado aqui -->
+        </div>
+    </main>
+</div>
 
-        // --- FUNÇÕES DE RENDERIZAÇÃO DE PÁGINA ---
+<!-- Script principal do App -->
+<script type="module">
+    // --- ÍCONES SVG (Lucide) ---
+    const icons = {
+        home: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+        calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>`,
+        map: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M14.106 5.553a2 2 0 0 0-2.212 0l-6.502 4.219A2 2 0 0 0 4.5 11.472v6.056a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6.056a2 2 0 0 0-.894-1.699l-6.502-4.22z"/><path d="M12 22V12"/><path d="m4.5 11.472 7.5 4.853 7.5-4.853"/><path d="M4.5 11.472V4.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v6.972"/></svg>`,
+        award: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`,
+        reservas: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="m9 14 2 2 4-4"/></svg>`,
+        manobras: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C20.7 7.6 16 2 16 2l-3.9 3.9c-.6.6-1.5.6-2.1 0L6 2s-4.7 5.6-4.5 9.1c-.8.2-1.5 1-1.5 1.9v3c0 .6.4 1 1 1h2"/><path d="M12 17v-5"/><path d="M-3 15C.5 10.5 5.5 8 12 8s11.5 2.5 15 7"/></svg>`,
+        avaliacoes: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-3"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+        back: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`
+    };
 
-        function createStatCard(title, value, icon, color = 'bg-primary') {
-            return `
-                <div class="p-6 rounded-xl shadow-lg flex items-center space-x-4 ${color} text-white">
-                    <div class="p-3 rounded-full bg-white/20"> ${icon} </div>
-                    <div>
-                        <div class="text-sm font-medium uppercase text-gray-200">${title}</div>
-                        <div class="text-2xl font-bold">${value}</div>
-                    </div>
+    // --- DADOS MOCK (Simulação de DB) ---
+    // Estes dados agora serão a fonte inicial, mas as alterações serão salvas no localStorage
+    let mockData = {
+        reservas: [
+            { id: 1, local: "Shopping Morumbi", data: "2025-11-20", status: "Confirmada", qrCode: '{"eventoId":12,"local":"Shopping Morumbi"}' },
+            { id: 2, local: "Show 'Rock Fest'", data: "2025-11-15", status: "Realizada", qrCode: '{"eventoId":10,"local":"Show \'Rock Fest\'"}' },
+        ],
+        eventos: [
+            { id: 10, nome: "Show 'Rock Fest'", local: "Arena Central", data: "2025-11-15", vagas: "Poucas", coords: [-23.5580, -46.7031], valorManobra: 50.00 },
+            { id: 11, nome: "Final Campeonato", local: "Estádio Principal", data: "2025-11-22", vagas: "Disponível", coords: [-23.5413, -46.6654], valorManobra: 45.00 },
+            { id: 12, nome: "Shopping Morumbi", local: "Shopping Morumbi", data: "Vagas", vagas: "Disponível", coords: [-23.6215, -46.7238], valorManobra: 30.00 },
+        ],
+        manobras: [
+            { id: 1, local: "Show 'Rock Fest'", data: "2025-11-15", valor: 50.00, cliente: "Ana Silva" },
+            { id: 2, local: "Cliente Avulso (Mapa)", data: "2025-11-14", valor: 25.00, cliente: "Marcos P." },
+        ],
+        avaliacoes: [
+            { id: 1, cliente: "Ana S.", nota: 5, comentario: "Muito rápido e prestativo!" },
+            { id: 2, cliente: "Marcos P.", nota: 4, comentario: "Bom serviço." },
+        ],
+        mapaClientes: [
+            { id: 1, local: "Rua Augusta, 123", distancia: "500m", coords: [-23.5518, -46.6500], valorManobra: 25.00 },
+            { id: 2, local: "Av. Paulista, 1000", distancia: "1.2km", coords: [-23.5641, -46.6522], valorManobra: 30.00 },
+        ],
+        recompensas: [
+            { id: 1, parceiro: "Amazon", tipo: "Cupom R$ 50", custo: 1000 },
+            { id: 2, parceiro: "Shopee", tipo: "Cupom R$ 30", custo: 700 },
+        ]
+    };
+
+    // --- ESTADO GLOBAL DA APLICAÇÃO ---
+    let state = {
+        currentUserType: null,
+        currentPage: 'inicio',
+        previousPage: 'inicio', // Salva a página anterior
+        currentPageParams: {}, 
+        userData: null, 
+        userId: null // Usaremos um ID simples para o localStorage
+    };
+    
+    let mapInstance = null;
+
+    // --- CHAVE DO LOCALSTORAGE ---
+    const LOCAL_STORAGE_KEY = 'parkPayProfile';
+
+    // --- SELETORES DE DOM ---
+    const mainContent = document.getElementById('main-content-area');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const registrationModal = document.getElementById('registration-modal');
+    const registrationForm = document.getElementById('registration-form');
+    const valetModal = document.getElementById('valet-modal');
+    const valetUpgradeForm = document.getElementById('valet-upgrade-form');
+    const appContainer = document.getElementById('app-container');
+    const manobristaFields = document.getElementById('manobrista-fields');
+    const confirmationModal = document.getElementById('confirmation-modal');
+
+    // --- FUNÇÕES DE RENDERIZAÇÃO DE PÁGINA ---
+    // (As funções de renderização createStatCard, createCard, renderInicio, renderEventos, renderMapa, initMap, renderRecompensas, renderReservas, renderManobras, renderAvaliacoes, renderPerfil, renderReservaDetalhe, renderManobraDetalhe permanecem idênticas ao código anterior)
+
+    function createStatCard(title, value, icon, color = 'bg-primary') {
+        return `
+            <div class="p-6 rounded-xl shadow-lg flex items-center space-x-4 ${color} text-white">
+                <div class="p-3 rounded-full bg-white/20"> ${icon} </div>
+                <div>
+                    <div class="text-sm font-medium uppercase text-gray-200">${title}</div>
+                    <div class="text-2xl font-bold">${value}</div>
                 </div>
-            `;
-        }
+            </div>
+        `;
+    }
 
-        function createCard(title, content) {
-            return `
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">${title}</h3>
-                    <div class="space-y-3">${content}</div>
-                </div>
-            `;
-        }
+    function createCard(title, content) {
+        return `
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">${title}</h3>
+                <div class="space-y-3">${content}</div>
+            </div>
+        `;
+    }
 
-        function renderInicio() {
-            const user = state.userData;
-            const userType = user.userType;
-            let statsHtml = '';
-            let listHtml = '';
+    function renderInicio() {
+        const user = state.userData;
+        const userType = user.userType;
+        let statsHtml = '';
+        let listHtml = '';
 
-            statsHtml = `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    ${createStatCard('Nível', user.nivel, icons.award.replace('mr-3', ''), 'bg-secondary text-black')}
-                    ${createStatCard('Park Coins', user.parkCoins, icons.award.replace('mr-3', ''))}
-                    ${createStatCard(userType === 'cliente' ? 'Reservas Feitas' : 'Manobras Totais', userType === 'cliente' ? mockData.reservas.length : mockData.manobras.length, userType === 'cliente' ? icons.reservas.replace('mr-3', '') : icons.manobras.replace('mr-3', ''))}
-                </div>
-            `;
-            
-            if (userType === 'cliente') {
-                const ultimasReservas = mockData.reservas.slice(0, 3).map(r => `
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div><div class="font-semibold">${r.local}</div><div class="text-sm text-gray-500">${r.data} - ${r.status}</div></div>
-                        <button class="text-primary-light font-medium btn-view-reserva" data-id="${r.id}">Ver</button>
-                    </div>
-                `).join('');
-                listHtml = createCard('Últimas Reservas', ultimasReservas);
-            } else {
-                const proximasManobras = mockData.manobras.slice(0, 3).map(m => `
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div><div class="font-semibold">${m.local}</div><div class="text-sm text-gray-500">${m.data} - R$ ${m.valor.toFixed(2)}</div></div>
-                        <button class="text-primary-light font-medium btn-view-manobra" data-id="${m.id}">Detalhes</button>
-                    </div>
-                `).join('');
-                listHtml = createCard('Próximas Manobras', proximasManobras);
-            }
-
-            const eventosFuturos = mockData.eventos.slice(0, 2).map(e => `
+        statsHtml = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                ${createStatCard('Nível', user.nivel, icons.award.replace('mr-3', ''), 'bg-secondary text-black')}
+                ${createStatCard('Park Coins', user.parkCoins, icons.award.replace('mr-3', ''))}
+                ${createStatCard(userType === 'cliente' ? 'Reservas Feitas' : 'Manobras Totais', userType === 'cliente' ? mockData.reservas.length : mockData.manobras.length, userType === 'cliente' ? icons.reservas.replace('mr-3', '') : icons.manobras.replace('mr-3', ''))}
+            </div>
+        `;
+        
+        if (userType === 'cliente') {
+            const ultimasReservas = mockData.reservas.slice(0, 3).map(r => `
                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div><div class="font-semibold">${e.nome}</div><div class="text-sm text-gray-500">${e.local} - ${e.data}</div></div>
-                    <button class="text-primary-light font-medium nav-link" data-page="eventos">Ver Eventos</button>
+                    <div><div class="font-semibold">${r.local}</div><div class="text-sm text-gray-500">${r.data} - ${r.status}</div></div>
+                    <button class="text-primary-light font-medium btn-view-reserva" data-id="${r.id}">Ver</button>
                 </div>
             `).join('');
-
-            mainContent.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-900 mb-6">Bem-vindo(a), ${user.nome}!</h1>
-                ${statsHtml}
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    ${listHtml}
-                    ${createCard('Eventos Futuros', eventosFuturos)}
-                </div>
-            `;
-        }
-
-        // --- PÁGINAS DE DETALHES ---
-        function renderReservaDetalhe(id) {
-            const reserva = mockData.reservas.find(r => r.id === parseInt(id));
-            if (!reserva) {
-                mainContent.innerHTML = `<h1 class="text-xl font-bold">Reserva não encontrada.</h1>
-                                         <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mt-4 py-3 px-4 rounded-lg shadow-md">
-                                             Voltar
-                                         </button>`;
-                return;
-            }
-            mainContent.innerHTML = `
-                <!-- ATUALIZADO: Botão voltar roxo e largo no mobile -->
-                <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mb-4 py-3 px-4 rounded-lg shadow-md">
-                    ${icons.back} Voltar
-                </button>
-                <h1 class="text-3xl font-bold text-gray-900 mb-6">Detalhes da Reserva</h1>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-bold mb-4">${reserva.local}</h2>
-                    <p class="text-gray-700 mb-2"><strong class="font-medium">Data:</strong> ${reserva.data}</p>
-                    <p class="text-gray-700 mb-4"><strong class="font-medium">Status:</strong> 
-                        <span class="font-semibold py-1 px-3 rounded-full text-sm ${reserva.status === 'Confirmada' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
-                            ${reserva.status}
-                        </span>
-                    </p>
-                    <h3 class="text-lg font-semibold mt-6 mb-2">QR Code de Acesso</h3>
-                    <div id="qrcode-container" class="w-40 h-40 bg-gray-200 rounded-lg"></div>
-                </div>
-            `;
-            setTimeout(() => initQRCode(reserva.qrCode), 0);
-        }
-
-        function renderManobraDetalhe(id) {
-            const manobra = mockData.manobras.find(m => m.id === parseInt(id));
-            if (!manobra) {
-                mainContent.innerHTML = `<h1 class="text-xl font-bold">Manobra não encontrada.</h1>
-                                         <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mt-4 py-3 px-4 rounded-lg shadow-md">
-                                             Voltar
-                                         </button>`;
-                return;
-            }
-            mainContent.innerHTML = `
-                <!-- ATUALIZADO: Botão voltar roxo e largo no mobile -->
-                <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mb-4 py-3 px-4 rounded-lg shadow-md">
-                    ${icons.back} Voltar
-                </button>
-                <h1 class="text-3xl font-bold text-gray-900 mb-6">Detalhes da Manobra</h1>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-bold mb-4">${manobra.local}</h2>
-                    <p class="text-gray-700 mb-2"><strong class="font-medium">Cliente:</strong> ${manobra.cliente}</p>
-                    <p class="text-gray-700 mb-4"><strong class="font-medium">Data:</strong> ${manobra.data}</p>
-                    <p class="text-2xl font-bold text-green-700">Valor Recebido: R$ ${manobra.valor.toFixed(2)}</p>
-                </div>
-            `;
-        }
-        // --- FIM PÁGINAS DE DETALHES ---
-        
-        function renderEventos() {
-            const userType = state.currentUserType;
-            const buttonText = userType === 'cliente' ? 'Reservar Vaga' : 'Aceitar Manobra';
-            const buttonClass = userType === 'cliente' ? 'bg-primary hover:bg-primary-dark btn-reservar-vaga' : 'bg-green-600 hover:bg-green-700 btn-aceitar-evento';
-            
-            const eventosList = mockData.eventos.map(e => `
-                <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-bold">${e.nome}</h4>
-                        <p class="text-gray-600">${e.local} - ${e.data}</p>
-                        <p class="text-sm font-medium ${e.vagas === 'Poucas' ? 'text-red-500' : 'text-green-600'}">Vagas: ${e.vagas}</p>
-                    </div>
-                    <button class="${buttonClass} text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all" data-id="${e.id}">
-                        ${buttonText}
-                    </button>
+            listHtml = createCard('Últimas Reservas', ultimasReservas);
+        } else {
+            const proximasManobras = mockData.manobras.slice(0, 3).map(m => `
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div><div class="font-semibold">${m.local}</div><div class="text-sm text-gray-500">${m.data} - R$ ${m.valor.toFixed(2)}</div></div>
+                    <button class="text-primary-light font-medium btn-view-manobra" data-id="${m.id}">Detalhes</button>
                 </div>
             `).join('');
-            mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Eventos</h1><div class="space-y-6">${eventosList}</div>`;
+            listHtml = createCard('Próximas Manobras', proximasManobras);
         }
 
-        function renderMapa() {
-            const userType = state.currentUserType;
-            const titulo = userType === 'cliente' ? 'Encontre Vagas Disponíveis' : 'Clientes Precisando de Manobra';
-            const subtexto = userType === 'cliente' 
-                ? 'Navegue pelo mapa para ver shoppings, mercados e eventos com vagas.' 
-                : 'Veja em tempo real onde os clientes estão solicitando manobristas.';
-            
-            let extraContent = '';
-            if (userType === 'manobrista') {
-                const clientesList = mockData.mapaClientes.map(c => `
-                    <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow">
-                        <div><div class="font-semibold">${c.local}</div><div class="text-sm text-gray-500">${c.distancia} de distância</div></div>
-                        <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-lg text-sm btn-aceitar-solicitacao" data-id="${c.id}">Aceitar</button>
-                    </div>
-                `).join('');
-                extraContent = `
-                    <div class="mt-6">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">Solicitações Próximas:</h3>
-                        <div class="space-y-3">${clientesList.length > 0 ? clientesList : '<p class="text-gray-600">Nenhuma solicitação no momento.</p>'}</div>
-                    </div>
-                `;
-            }
-            mainContent.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">${titulo}</h1>
-                <p class="text-lg text-gray-600 mb-6">${subtexto}</p>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <div id="map" class="w-full h-96 bg-gray-200 rounded-lg"></div>
-                    ${extraContent}
+        const eventosFuturos = mockData.eventos.slice(0, 2).map(e => `
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div><div class="font-semibold">${e.nome}</div><div class="text-sm text-gray-500">${e.local} - ${e.data}</div></div>
+                <button class="text-primary-light font-medium nav-link" data-page="eventos">Ver Eventos</button>
+            </div>
+        `).join('');
+
+        mainContent.innerHTML = `
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Bem-vindo(a), ${user.nome}!</h1>
+            ${statsHtml}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                ${listHtml}
+                ${createCard('Eventos Futuros', eventosFuturos)}
+            </div>
+        `;
+    }
+
+    // --- PÁGINAS DE DETALHES ---
+    function renderReservaDetalhe(id) {
+        const reserva = mockData.reservas.find(r => r.id === parseInt(id));
+        if (!reserva) {
+            mainContent.innerHTML = `<h1 class="text-xl font-bold">Reserva não encontrada.</h1>
+                                     <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mt-4 py-3 px-4 rounded-lg shadow-md">
+                                         Voltar
+                                     </button>`;
+            return;
+        }
+        mainContent.innerHTML = `
+            <!-- ATUALIZADO: Botão voltar roxo e largo no mobile -->
+            <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mb-4 py-3 px-4 rounded-lg shadow-md">
+                ${icons.back} Voltar
+            </button>
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Detalhes da Reserva</h1>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">${reserva.local}</h2>
+                <p class="text-gray-700 mb-2"><strong class="font-medium">Data:</strong> ${reserva.data}</p>
+                <p class="text-gray-700 mb-4"><strong class="font-medium">Status:</strong> 
+                    <span class="font-semibold py-1 px-3 rounded-full text-sm ${reserva.status === 'Confirmada' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
+                        ${reserva.status}
+                    </span>
+                </p>
+                <h3 class="text-lg font-semibold mt-6 mb-2">QR Code de Acesso</h3>
+                <div id="qrcode-container" class="w-40 h-40 bg-gray-200 rounded-lg"></div>
+            </div>
+        `;
+        setTimeout(() => initQRCode(reserva.qrCode), 0);
+    }
+
+    function renderManobraDetalhe(id) {
+        const manobra = mockData.manobras.find(m => m.id === parseInt(id));
+        if (!manobra) {
+            mainContent.innerHTML = `<h1 class="text-xl font-bold">Manobra não encontrada.</h1>
+                                     <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mt-4 py-3 px-4 rounded-lg shadow-md">
+                                         Voltar
+                                     </button>`;
+            return;
+        }
+        mainContent.innerHTML = `
+            <!-- ATUALIZADO: Botão voltar roxo e largo no mobile -->
+            <button class="btn-voltar text-white bg-primary hover:bg-primary-dark font-bold flex items-center justify-center w-full md:w-auto mb-4 py-3 px-4 rounded-lg shadow-md">
+                ${icons.back} Voltar
+            </button>
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Detalhes da Manobra</h1>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">${manobra.local}</h2>
+                <p class="text-gray-700 mb-2"><strong class="font-medium">Cliente:</strong> ${manobra.cliente}</p>
+                <p class="text-gray-700 mb-4"><strong class="font-medium">Data:</strong> ${manobra.data}</p>
+                <p class="text-2xl font-bold text-green-700">Valor Recebido: R$ ${manobra.valor.toFixed(2)}</p>
+            </div>
+        `;
+    }
+    // --- FIM PÁGINAS DE DETALHES ---
+    
+    function renderEventos() {
+        const userType = state.currentUserType;
+        const buttonText = userType === 'cliente' ? 'Reservar Vaga' : 'Aceitar Manobra';
+        const buttonClass = userType === 'cliente' ? 'bg-primary hover:bg-primary-dark btn-reservar-vaga' : 'bg-green-600 hover:bg-green-700 btn-aceitar-evento';
+        
+        const eventosList = mockData.eventos.map(e => `
+            <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between">
+                <div>
+                    <h4 class="text-lg font-bold">${e.nome}</h4>
+                    <p class="text-gray-600">${e.local} - ${e.data}</p>
+                    <p class="text-sm font-medium ${e.vagas === 'Poucas' ? 'text-red-500' : 'text-green-600'}">Vagas: ${e.vagas}</p>
+                </div>
+                <button class="${buttonClass} text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all" data-id="${e.id}">
+                    ${buttonText}
+                </button>
+            </div>
+        `).join('');
+        mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Eventos</h1><div class="space-y-6">${eventosList}</div>`;
+    }
+
+    function renderMapa() {
+        const userType = state.currentUserType;
+        const titulo = userType === 'cliente' ? 'Encontre Vagas Disponíveis' : 'Clientes Precisando de Manobra';
+        const subtexto = userType === 'cliente' 
+            ? 'Navegue pelo mapa para ver shoppings, mercados e eventos com vagas.' 
+            : 'Veja em tempo real onde os clientes estão solicitando manobristas.';
+        
+        let extraContent = '';
+        if (userType === 'manobrista') {
+            const clientesList = mockData.mapaClientes.map(c => `
+                <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow">
+                    <div><div class="font-semibold">${c.local}</div><div class="text-sm text-gray-500">${c.distancia} de distância</div></div>
+                    <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-lg text-sm btn-aceitar-solicitacao" data-id="${c.id}">Aceitar</button>
+                </div>
+            `).join('');
+            extraContent = `
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Solicitações Próximas:</h3>
+                    <div class="space-y-3">${clientesList.length > 0 ? clientesList : '<p class="text-gray-600">Nenhuma solicitação no momento.</p>'}</div>
                 </div>
             `;
-            setTimeout(initMap, 0);
         }
-        
-        function initMap() {
+        mainContent.innerHTML = `
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">${titulo}</h1>
+            <p class="text-lg text-gray-600 mb-6">${subtexto}</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div id="map" class="w-full h-96 bg-gray-200 rounded-lg"></div>
+                ${extraContent}
+            </div>
+        `;
+        setTimeout(initMap, 0);
+    }
+    
+    function initMap() {
+        try {
             if (mapInstance) {
                 mapInstance.remove();
                 mapInstance = null;
@@ -581,496 +578,483 @@
                         .openPopup();
                 });
             }
+        } catch(e) {
+            console.error("Erro ao iniciar o Leaflet: ", e);
+            document.getElementById('map').innerHTML = "Erro ao carregar o mapa. Verifique sua conexão com a internet.";
         }
+    }
 
-        function renderRecompensas() {
-            const data = state.userData;
-            const recompensasList = mockData.recompensas.map(r => `
-                <div class="bg-white p-5 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-                    <div><h4 class="text-lg font-bold">${r.parceiro}</h4><p class="text-gray-600">${r.tipo}</p></div>
-                    <button class="bg-secondary text-black font-bold py-2 px-4 rounded-lg shadow-md transition-all btn-trocar-recompensa ${data.parkCoins < r.custo ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-500'}" 
-                            data-id="${r.id}" ${data.parkCoins < r.custo ? 'disabled' : ''}>
-                        Trocar (Custo: ${r.custo} PC)
+    function renderRecompensas() {
+        const data = state.userData;
+        const recompensasList = mockData.recompensas.map(r => `
+            <div class="bg-white p-5 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <div><h4 class="text-lg font-bold">${r.parceiro}</h4><p class="text-gray-600">${r.tipo}</p></div>
+                <button class="bg-secondary text-black font-bold py-2 px-4 rounded-lg shadow-md transition-all btn-trocar-recompensa ${data.parkCoins < r.custo ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-500'}" 
+                        data-id="${r.id}" ${data.parkCoins < r.custo ? 'disabled' : ''}>
+                    Trocar (Custo: ${r.custo} PC)
+                </button>
+            </div>
+        `).join('');
+        mainContent.innerHTML = `
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Recompensas</h1>
+            <div class="mb-8 p-6 rounded-xl shadow-lg bg-primary text-white flex items-center justify-between">
+                <div><div class="text-sm font-medium uppercase text-gray-200">Seus Park Coins</div><div class="text-4xl font-bold">${data.parkCoins} PC</div></div>
+                <div class="p-3 rounded-full bg-white/20">${icons.award.replace('mr-3', '')}</div>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Troque seus pontos</h2>
+            <div class="space-y-6">${recompensasList}</div>
+        `;
+    }
+
+    function renderReservas() {
+        const reservasList = mockData.reservas.map(r => `
+            <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between">
+                <div><h4 class="text-lg font-bold">${r.local}</h4><p class="text-gray-600">Data: ${r.data}</p></div>
+                <button class="text-primary-light font-medium btn-view-reserva" data-id="${r.id}">Ver Detalhes</button>
+            </div>
+        `).join('');
+        mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Minhas Reservas</h1><div class="space-y-6">${reservasList.length > 0 ? reservasList : '<p class="text-gray-600">Você ainda não possui reservas.</p>'}</div>`;
+    }
+
+    function renderManobras() {
+        const manobrasList = mockData.manobras.map(m => `
+            <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between">
+                <div><h4 class="text-lg font-bold">${m.local}</h4><p class="text-gray-600">Data: ${m.data}</p></div>
+                <button class="text-primary-light font-medium btn-view-manobra" data-id="${m.id}">Ver Detalhes</button>
+            </div>
+        `).join('');
+        mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Minhas Manobras</h1><div class="space-y-6">${manobrasList.length > 0 ? manobrasList : '<p class="text-gray-600">Você ainda não realizou manobras.</p>'}</div>`;
+    }
+
+    function renderAvaliacoes() {
+        const data = mockData.avaliacoes;
+        const media = data.reduce((acc, a) => acc + a.nota, 0) / data.length;
+        const avaliacoesList = data.map(a => {
+            let estrelas = Array(5).fill(0).map((_, i) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${i < a.nota ? '#FBBF24' : '#E5E7EB'}" stroke="${i < a.nota ? '#FBBF24' : '#E5E7EB'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join('');
+            return `<div class="bg-white p-5 rounded-xl shadow-lg"><div class="flex items-center justify-between mb-2"><span class="font-bold text-gray-800">${a.cliente}</span><div class="flex">${estrelas}</div></div><p class="text-gray-600 italic">"${a.comentario}"</p></div>`;
+        }).join('');
+        mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Minhas Avaliações</h1><div class="mb-8 p-6 rounded-xl shadow-lg bg-secondary text-black flex items-center justify-center space-x-2"><span class="text-xl font-bold">Sua nota média:</span><span class="text-3xl font-bold">${media.toFixed(1)}</span>${icons.avaliacoes.replace('mr-3', 'w-8 h-8')}</div><div class="space-y-6">${avaliacoesList}</div>`;
+    }
+    
+    function renderPerfil() {
+        const user = state.userData;
+        let cadastroManobrista = '';
+        
+        if (user.userType === 'cliente') {
+            cadastroManobrista = `
+                <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Seja um Manobrista Parceiro</h3>
+                    <p class="text-gray-600 mb-4">Ganhe dinheiro no seu tempo livre. Cadastre-se como manobrista parceiro Park Pay e comece a aceitar manobras.</p>
+                    <button id="show-valet-upgrade-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg shadow-md transition-all">
+                        Quero ser Manobrista
                     </button>
                 </div>
-            `).join('');
-            mainContent.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-900 mb-6">Recompensas</h1>
-                <div class="mb-8 p-6 rounded-xl shadow-lg bg-primary text-white flex items-center justify-between">
-                    <div><div class="text-sm font-medium uppercase text-gray-200">Seus Park Coins</div><div class="text-4xl font-bold">${data.parkCoins} PC</div></div>
-                    <div class="p-3 rounded-full bg-white/20">${icons.award.replace('mr-3', '')}</div>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Troque seus pontos</h2>
-                <div class="space-y-6">${recompensasList}</div>
             `;
         }
 
-        function renderReservas() {
-            const reservasList = mockData.reservas.map(r => `
-                <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between">
-                    <div><h4 class="text-lg font-bold">${r.local}</h4><p class="text-gray-600">Data: ${r.data}</p></div>
-                    <button class="text-primary-light font-medium btn-view-reserva" data-id="${r.id}">Ver Detalhes</button>
-                </div>
-            `).join('');
-            mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Minhas Reservas</h1><div class="space-y-6">${reservasList.length > 0 ? reservasList : '<p class="text-gray-600">Você ainda não possui reservas.</p>'}</div>`;
-        }
-
-        function renderManobras() {
-            const manobrasList = mockData.manobras.map(m => `
-                <div class="bg-white p-5 rounded-xl shadow-lg flex items-center justify-between">
-                    <div><h4 class="text-lg font-bold">${m.local}</h4><p class="text-gray-600">Data: ${m.data}</p></div>
-                    <button class="text-primary-light font-medium btn-view-manobra" data-id="${m.id}">Ver Detalhes</button>
-                </div>
-            `).join('');
-            mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Minhas Manobras</h1><div class="space-y-6">${manobrasList.length > 0 ? manobrasList : '<p class="text-gray-600">Você ainda não realizou manobras.</p>'}</div>`;
-        }
-
-        function renderAvaliacoes() {
-            const data = mockData.avaliacoes;
-            const media = data.reduce((acc, a) => acc + a.nota, 0) / data.length;
-            const avaliacoesList = data.map(a => {
-                let estrelas = Array(5).fill(0).map((_, i) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${i < a.nota ? '#FBBF24' : '#E5E7EB'}" stroke="${i < a.nota ? '#FBBF24' : '#E5E7EB'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join('');
-                return `<div class="bg-white p-5 rounded-xl shadow-lg"><div class="flex items-center justify-between mb-2"><span class="font-bold text-gray-800">${a.cliente}</span><div class="flex">${estrelas}</div></div><p class="text-gray-600 italic">"${a.comentario}"</p></div>`;
-            }).join('');
-            mainContent.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-6">Minhas Avaliações</h1><div class="mb-8 p-6 rounded-xl shadow-lg bg-secondary text-black flex items-center justify-center space-x-2"><span class="text-xl font-bold">Sua nota média:</span><span class="text-3xl font-bold">${media.toFixed(1)}</span>${icons.avaliacoes.replace('mr-3', 'w-8 h-8')}</div><div class="space-y-6">${avaliacoesList}</div>`;
-        }
-        
-        function renderPerfil() {
-            const user = state.userData;
-            let cadastroManobrista = '';
-            
-            if (user.userType === 'cliente') {
-                cadastroManobrista = `
-                    <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">Seja um Manobrista Parceiro</h3>
-                        <p class="text-gray-600 mb-4">Ganhe dinheiro no seu tempo livre. Cadastre-se como manobrista parceiro Park Pay e comece a aceitar manobras.</p>
-                        <button id="show-valet-upgrade-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg shadow-md transition-all">
-                            Quero ser Manobrista
-                        </button>
+        mainContent.innerHTML = `
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Meu Perfil</h1>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold">
+                        ${user.nome.charAt(0)}
                     </div>
-                `;
-            }
-
-            mainContent.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-900 mb-6">Meu Perfil</h1>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <div class="flex items-center space-x-4 mb-6">
-                        <div class="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold">
-                            ${user.nome.charAt(0)}
-                        </div>
-                        <div>
-                            <h2 class="text-2xl font-bold">${user.nome}</h2>
-                            <p class="text-gray-600 capitalize">${user.userType}</p>
-                        </div>
-                    </div>
-                    <div class="border-t border-gray-200 pt-6">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Informações da Conta</h3>
-                        <p class="text-gray-600"><strong>Usuário ID:</strong> <span class="text-xs">${state.userId}</span></p>
-                        <p class="text-gray-600"><strong>Email:</strong> ${user.email || 'Não informado'}</p>
-                        <p class="text-gray-600"><strong>Nível:</strong> ${user.nivel}</p>
-                        ${user.cnh ? `<p class="text-gray-600"><strong>CNH:</strong> ${user.cnh}</p>` : ''}
-                        ${user.categoriaCnh ? `<p class="text-gray-600"><strong>Categoria:</strong> ${user.categoriaCnh}</p>` : ''}
-                        ${user.veiculo ? `<p class="text-gray-600"><strong>Veículo:</strong> ${user.veiculo}</p>` : ''}
+                    <div>
+                        <h2 class="text-2xl font-bold">${user.nome}</h2>
+                        <p class="text-gray-600 capitalize">${user.userType}</p>
                     </div>
                 </div>
-                ${cadastroManobrista}
-            `;
-        }
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Informações da Conta</h3>
+                    <p class="text-gray-600"><strong>Usuário ID:</strong> <span class="text-xs">${state.userId}</span></p>
+                    <p class="text-gray-600"><strong>Email:</strong> ${user.email || 'Não informado'}</p>
+                    <p class="text-gray-600"><strong>Nível:</strong> ${user.nivel}</p>
+                    ${user.cnh ? `<p class="text-gray-600"><strong>CNH:</strong> ${user.cnh}</p>` : ''}
+                    ${user.categoriaCnh ? `<p class="text-gray-600"><strong>Categoria:</strong> ${user.categoriaCnh}</p>` : ''}
+                    ${user.veiculo ? `<p class="text-gray-600"><strong>Veículo:</strong> ${user.veiculo}</p>` : ''}
+                </div>
+            </div>
+            ${cadastroManobrista}
+        `;
+    }
 
-        // --- ROTEAMENTO E NAVEGAÇÃO ---
+    // --- ROTEAMENTO E NAVEGAÇÃO ---
+    
+    function renderSidebarLinks() {
+        const userType = state.currentUserType;
         
-        function renderSidebarLinks() {
-            const userType = state.currentUserType;
-            
-            document.getElementById('nav-inicio').innerHTML = `<a href="#" data-page="inicio" class="sidebar-link nav-link">${icons.home} <span>Início</span></a>`;
-            document.getElementById('nav-eventos').innerHTML = `<a href="#" data-page="eventos" class="sidebar-link nav-link">${icons.calendar} <span>Eventos</span></a>`;
-            document.getElementById('nav-mapa').innerHTML = `<a href="#" data-page="mapa" class="sidebar-link nav-link">${icons.map} <span>Mapa</span></a>`;
-            document.getElementById('nav-recompensas').innerHTML = `<a href="#" data-page="recompensas" class="sidebar-link nav-link">${icons.award} <span>Recompensas</span></a>`;
-            
-            const navReservas = document.getElementById('nav-reservas');
-            const navManobras = document.getElementById('nav-manobras');
-            const navAvaliacoes = document.getElementById('nav-avaliacoes');
-
-            if (userType === 'cliente') {
-                navReservas.innerHTML = `<a href="#" data-page="reservas" class="sidebar-link nav-link">${icons.reservas} <span>Minhas Reservas</span></a>`;
-                navReservas.classList.remove('hidden');
-                navManobras.classList.add('hidden');
-                navAvaliacoes.classList.add('hidden');
-            } else { // Manobrista
-                navManobras.innerHTML = `<a href="#" data-page="manobras" class="sidebar-link nav-link">${icons.manobras} <span>Minhas Manobras</span></a>`;
-                navAvaliacoes.innerHTML = `<a href="#" data-page="avaliacoes" class="sidebar-link nav-link">${icons.avaliacoes} <span>Avaliações</span></a>`;
-                navReservas.classList.add('hidden');
-                navManobras.classList.remove('hidden');
-                navAvaliacoes.classList.remove('hidden');
-            }
-        }
-
-        function updateActiveLink() {
-            document.querySelectorAll('.nav-link').forEach(link => {
-                if (link.dataset.page === state.currentPage) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
-            });
-        }
-
-        function navigateTo(page, params = {}) {
-            // Salva a página anterior APENAS se estivermos navegando PARA uma página de detalhes
-            if (page === 'reservaDetalhe' || page === 'manobraDetalhe') {
-                 state.previousPage = state.currentPage; // Salva de onde viemos (ex: 'inicio' ou 'reservas')
-            }
-            state.currentPage = page;
-            state.currentPageParams = params;
-            renderContent();
-            updateActiveLink();
-        }
-
-        // ATUALIZADO: Botão voltar navega para state.previousPage
-        function navigateBack() {
-            navigateTo(state.previousPage);
-        }
-
-        function renderContent() {
-            mainContent.classList.remove('content-fade-in');
-            void mainContent.offsetWidth; 
-            mainContent.classList.add('content-fade-in');
-
-            switch (state.currentPage) {
-                case 'inicio': renderInicio(); break;
-                case 'eventos': renderEventos(); break;
-                case 'mapa': renderMapa(); break;
-                case 'recompensas': renderRecompensas(); break;
-                case 'reservas': renderReservas(); break;
-                case 'manobras': renderManobras(); break;
-                case 'avaliacoes': renderAvaliacoes(); break;
-                case 'perfil': renderPerfil(); break;
-                case 'reservaDetalhe': renderReservaDetalhe(state.currentPageParams.id); break;
-                case 'manobraDetalhe': renderManobraDetalhe(state.currentPageParams.id); break;
-                default: renderInicio();
-            }
-        }
+        document.getElementById('nav-inicio').innerHTML = `<a href="#" data-page="inicio" class="sidebar-link nav-link">${icons.home} <span>Início</span></a>`;
+        document.getElementById('nav-eventos').innerHTML = `<a href="#" data-page="eventos" class="sidebar-link nav-link">${icons.calendar} <span>Eventos</span></a>`;
+        document.getElementById('nav-mapa').innerHTML = `<a href="#" data-page="mapa" class="sidebar-link nav-link">${icons.map} <span>Mapa</span></a>`;
+        document.getElementById('nav-recompensas').innerHTML = `<a href="#" data-page="recompensas" class="sidebar-link nav-link">${icons.award} <span>Recompensas</span></a>`;
         
-        // --- FUNÇÕES DE INICIALIZAÇÃO E FIREBASE ---
+        const navReservas = document.getElementById('nav-reservas');
+        const navManobras = document.getElementById('nav-manobras');
+        const navAvaliacoes = document.getElementById('nav-avaliacoes');
+
+        if (userType === 'cliente') {
+            navReservas.innerHTML = `<a href="#" data-page="reservas" class="sidebar-link nav-link">${icons.reservas} <span>Minhas Reservas</span></a>`;
+            navReservas.classList.remove('hidden');
+            navManobras.classList.add('hidden');
+            navAvaliacoes.classList.add('hidden');
+        } else { // Manobrista
+            navManobras.innerHTML = `<a href="#" data-page="manobras" class="sidebar-link nav-link">${icons.manobras} <span>Minhas Manobras</span></a>`;
+            navAvaliacoes.innerHTML = `<a href="#" data-page="avaliacoes" class="sidebar-link nav-link">${icons.avaliacoes} <span>Avaliações</span></a>`;
+            navReservas.classList.add('hidden');
+            navManobras.classList.remove('hidden');
+            navAvaliacoes.classList.remove('hidden');
+        }
+    }
+
+    function updateActiveLink() {
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.dataset.page === state.currentPage) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+
+    function navigateTo(page, params = {}) {
+        // Salva a página anterior APENAS se estivermos navegando PARA uma página de detalhes
+        if (page === 'reservaDetalhe' || page === 'manobraDetalhe') {
+             state.previousPage = state.currentPage; // Salva de onde viemos (ex: 'inicio' ou 'reservas')
+        }
+        state.currentPage = page;
+        state.currentPageParams = params;
+        renderContent();
+        updateActiveLink();
+    }
+
+    function navigateBack() {
+        navigateTo(state.previousPage);
+    }
+
+    function renderContent() {
+        mainContent.classList.remove('content-fade-in');
+        void mainContent.offsetWidth; 
+        mainContent.classList.add('content-fade-in');
+
+        switch (state.currentPage) {
+            case 'inicio': renderInicio(); break;
+            case 'eventos': renderEventos(); break;
+            case 'mapa': renderMapa(); break;
+            case 'recompensas': renderRecompensas(); break;
+            case 'reservas': renderReservas(); break;
+            case 'manobras': renderManobras(); break;
+            case 'avaliacoes': renderAvaliacoes(); break;
+            case 'perfil': renderPerfil(); break;
+            case 'reservaDetalhe': renderReservaDetalhe(state.currentPageParams.id); break;
+            case 'manobraDetalhe': renderManobraDetalhe(state.currentPageParams.id); break;
+            default: renderInicio();
+        }
+    }
+    
+    // --- FUNÇÕES DE INICIALIZAÇÃO E LOCALSTORAGE ---
+    
+    function initQRCode(data) {
+        const qrcodeContainer = document.getElementById('qrcode-container');
+        if (!qrcodeContainer) return;
+        try {
+            qrcodeContainer.innerHTML = '';
+            const qr = qrcode(0, 'M'); 
+            qr.addData(data); 
+            qr.make();
+            qrcodeContainer.innerHTML = qr.createImgTag(4); 
+        } catch (e) {
+            console.error("Erro ao gerar QR Code: ", e);
+            qrcodeContainer.innerHTML = "Erro ao gerar QR Code";
+        }
+    }
+
+    function showConfirmationModal(title, message) {
+        document.getElementById('confirmation-title').textContent = title;
+        document.getElementById('confirmation-message').textContent = message;
+        confirmationModal.classList.remove('hidden');
+    }
+
+    function closeConfirmationModal() {
+        confirmationModal.classList.add('hidden');
+    }
+
+    // Funções de salvamento local
+    function saveProfileToLocalStorage() {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.userData));
+    }
+
+    function loadProfileFromLocalStorage() {
+        const storedProfile = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (storedProfile) {
+            return JSON.parse(storedProfile);
+        }
+        return null;
+    }
+
+    // Ações dos Botões (Modificadas para localStorage)
+    function handleReservarVaga(eventId) {
+        const evento = mockData.eventos.find(e => e.id === parseInt(eventId));
+        if (!evento) return;
+        const jaReservado = mockData.reservas.find(r => r.eventoId === evento.id);
+        if (jaReservado) {
+            showConfirmationModal('Erro', `Você já possui uma reserva para ${evento.nome}.`);
+            return;
+        }
+        const newReserva = {
+            id: mockData.reservas.length + 100, 
+            local: evento.nome, data: evento.data, status: "Confirmada",
+            qrCode: JSON.stringify({ eventoId: evento.id, userId: state.userId, local: evento.nome }),
+            eventoId: evento.id
+        };
+        mockData.reservas.push(newReserva);
+        showConfirmationModal('Reserva Confirmada!', `Sua vaga para ${evento.nome} foi garantida.`);
+        setTimeout(() => {
+            closeConfirmationModal();
+            navigateTo('reservas');
+        }, 1500);
+    }
+    
+    function handleAceitarEvento(eventId) {
+        const evento = mockData.eventos.find(e => e.id === parseInt(eventId));
+        if (!evento) return;
         
-        function initQRCode(data) {
-            const qrcodeContainer = document.getElementById('qrcode-container');
-            if (!qrcodeContainer) return;
-            try {
-                qrcodeContainer.innerHTML = '';
-                const qr = qrcode(0, 'M'); 
-                qr.addData(data); 
-                qr.make();
-                qrcodeContainer.innerHTML = qr.createImgTag(4); 
-            } catch (e) {
-                console.error("Erro ao gerar QR Code: ", e);
-                qrcodeContainer.innerHTML = "Erro ao gerar QR Code";
-            }
+        const newManobra = {
+            id: mockData.manobras.length + 100,
+            local: evento.nome,
+            data: evento.data,
+            valor: evento.valorManobra,
+            cliente: "Cliente do Evento"
+        };
+        mockData.manobras.push(newManobra);
+        showConfirmationModal('Manobra Aceita!', `Você confirmou a manobra para ${evento.nome}.`);
+        setTimeout(() => {
+            closeConfirmationModal();
+            navigateTo('manobras');
+        }, 1500);
+    }
+    
+    function handleAceitarSolicitacao(requestId) {
+        const requestIndex = mockData.mapaClientes.findIndex(r => r.id === parseInt(requestId));
+        if (requestIndex === -1) return;
+
+        const request = mockData.mapaClientes[requestIndex];
+        const newManobra = {
+            id: mockData.manobras.length + 100,
+            local: `Cliente Avulso (${request.local})`,
+            data: new Date().toISOString().split('T')[0],
+            valor: request.valorManobra,
+            cliente: "Cliente Avulso"
+        };
+        mockData.manobras.push(newManobra);
+        mockData.mapaClientes.splice(requestIndex, 1); 
+
+        showConfirmationModal('Manobra Aceita!', `Você está a caminho de ${request.local}.`);
+        setTimeout(() => {
+            closeConfirmationModal();
+            navigateTo('manobras');
+        }, 1500);
+    }
+
+    function handleTrocarRecompensa(rewardId) {
+        const reward = mockData.recompensas.find(r => r.id === parseInt(rewardId));
+        if (!reward) return;
+
+        if (state.userData.parkCoins < reward.custo) {
+            showConfirmationModal('Erro', 'Park Coins insuficientes para esta troca.');
+            return;
         }
 
-        function showConfirmationModal(title, message) {
-            document.getElementById('confirmation-title').textContent = title;
-            document.getElementById('confirmation-message').textContent = message;
-            confirmationModal.classList.remove('hidden');
-        }
-
-        function closeConfirmationModal() {
-            confirmationModal.classList.add('hidden');
-        }
-
-        // Ações dos Botões
-        function handleReservarVaga(eventId) {
-            const evento = mockData.eventos.find(e => e.id === parseInt(eventId));
-            if (!evento) return;
-            const jaReservado = mockData.reservas.find(r => r.eventoId === evento.id);
-            if (jaReservado) {
-                showConfirmationModal('Erro', `Você já possui uma reserva para ${evento.nome}.`);
-                return;
-            }
-            const newReserva = {
-                id: mockData.reservas.length + 100, 
-                local: evento.nome, data: evento.data, status: "Confirmada",
-                qrCode: JSON.stringify({ eventoId: evento.id, userId: state.userId, local: evento.nome }),
-                eventoId: evento.id
-            };
-            mockData.reservas.push(newReserva);
-            showConfirmationModal('Reserva Confirmada!', `Sua vaga para ${evento.nome} foi garantida.`);
-            setTimeout(() => {
-                closeConfirmationModal();
-                navigateTo('reservas');
-            }, 1500);
-        }
+        const newParkCoins = state.userData.parkCoins - reward.custo;
+        state.userData.parkCoins = newParkCoins;
+        saveProfileToLocalStorage(); // Salva a mudança
         
-        function handleAceitarEvento(eventId) {
-            const evento = mockData.eventos.find(e => e.id === parseInt(eventId));
-            if (!evento) return;
-            
-            const newManobra = {
-                id: mockData.manobras.length + 100,
-                local: evento.nome,
-                data: evento.data,
-                valor: evento.valorManobra,
-                cliente: "Cliente do Evento"
-            };
-            mockData.manobras.push(newManobra);
-            showConfirmationModal('Manobra Aceita!', `Você confirmou a manobra para ${evento.nome}.`);
-            setTimeout(() => {
-                closeConfirmationModal();
-                navigateTo('manobras');
-            }, 1500);
-        }
-        
-        function handleAceitarSolicitacao(requestId) {
-            const requestIndex = mockData.mapaClientes.findIndex(r => r.id === parseInt(requestId));
-            if (requestIndex === -1) return;
+        showConfirmationModal('Troca Realizada!', `Você resgatou: ${reward.tipo}.`);
+        setTimeout(() => {
+            closeConfirmationModal();
+            navigateTo('recompensas');
+        }, 1500);
+    }
 
-            const request = mockData.mapaClientes[requestIndex];
-            const newManobra = {
-                id: mockData.manobras.length + 100,
-                local: `Cliente Avulso (${request.local})`,
-                data: new Date().toISOString().split('T')[0],
-                valor: request.valorManobra,
-                cliente: "Cliente Avulso"
-            };
-            mockData.manobras.push(newManobra);
-            mockData.mapaClientes.splice(requestIndex, 1); 
+    // Cadastro (Modificado para localStorage)
+    function handleRegistration(e) {
+        e.preventDefault();
+        const nome = document.getElementById('reg-nome').value;
+        const email = document.getElementById('reg-email').value;
+        const userType = document.querySelector('input[name="userType"]:checked').value;
+        if (!nome || !email) return;
 
-            showConfirmationModal('Manobra Aceita!', `Você está a caminho de ${request.local}.`);
-            setTimeout(() => {
-                closeConfirmationModal();
-                navigateTo('manobras');
-            }, 1500);
-        }
-
-        async function handleTrocarRecompensa(rewardId) {
-            const reward = mockData.recompensas.find(r => r.id === parseInt(rewardId));
-            if (!reward) return;
-
-            if (state.userData.parkCoins < reward.custo) {
-                showConfirmationModal('Erro', 'Park Coins insuficientes para esta troca.');
-                return;
-            }
-
-            const newParkCoins = state.userData.parkCoins - reward.custo;
-            const profileRef = doc(db, 'artifacts', appId, 'users', state.userId, 'profile', 'data');
-            
-            try {
-                await updateDoc(profileRef, { parkCoins: newParkCoins });
-                state.userData.parkCoins = newParkCoins;
-                
-                showConfirmationModal('Troca Realizada!', `Você resgatou: ${reward.tipo}.`);
-                setTimeout(() => {
-                    closeConfirmationModal();
-                    navigateTo('recompensas');
-                }, 1500);
-
-            } catch (error) {
-                console.error("Erro ao atualizar Park Coins: ", error);
-                showConfirmationModal('Erro', 'Não foi possível completar a troca. Tente novamente.');
-            }
-        }
-
-
-        // Cadastro
-        async function handleRegistration(e) {
-            e.preventDefault();
-            const nome = document.getElementById('reg-nome').value;
-            const email = document.getElementById('reg-email').value;
-            const userType = document.querySelector('input[name="userType"]:checked').value;
-            if (!nome || !email) return;
-            const profileRef = doc(db, 'artifacts', appId, 'users', state.userId, 'profile', 'data');
-            let newUserData = {
-                nome: nome, email: email, userType: userType,
-                nivel: "Bronze", parkCoins: 100,
-            };
-            if (userType === 'manobrista') {
-                const cnh = document.getElementById('reg-cnh').value;
-                const categoriaCnh = document.getElementById('reg-cnh-categoria').value;
-                const veiculo = document.getElementById('reg-veiculo').value;
-                if (!cnh || !categoriaCnh || !veiculo) return;
-                newUserData = { ...newUserData, cnh: cnh, categoriaCnh: categoriaCnh, veiculo: veiculo };
-            }
-            try {
-                await setDoc(profileRef, newUserData);
-                state.userData = newUserData;
-                state.currentUserType = userType;
-                registrationModal.classList.add('hidden');
-                renderApp();
-            } catch (error) { console.error("Erro ao salvar perfil: ", error); }
-        }
-        
-        // Upgrade de Manobrista
-        async function handleValetUpgrade(e) {
-            e.preventDefault();
-            const cnh = document.getElementById('valet-cnh').value;
-            const categoriaCnh = document.getElementById('valet-cnh-categoria').value;
-            const veiculo = document.getElementById('valet-veiculo').value;
+        let newUserData = {
+            nome: nome, email: email, userType: userType,
+            nivel: "Bronze", parkCoins: 100,
+        };
+        if (userType === 'manobrista') {
+            const cnh = document.getElementById('reg-cnh').value;
+            const categoriaCnh = document.getElementById('reg-cnh-categoria').value;
+            const veiculo = document.getElementById('reg-veiculo').value;
             if (!cnh || !categoriaCnh || !veiculo) return;
-            const profileRef = doc(db, 'artifacts', appId, 'users', state.userId, 'profile', 'data');
-            const updatedData = {
-                userType: 'manobrista', cnh: cnh, categoriaCnh: categoriaCnh,
-                veiculo: veiculo, nivel: 'Prata'
-            };
-            try {
-                await updateDoc(profileRef, updatedData);
-                state.userData = { ...state.userData, ...updatedData };
-                state.currentUserType = 'manobrista';
-                valetModal.classList.add('hidden');
-                renderApp(); 
-                navigateTo('perfil'); 
-            } catch (error) { console.error("Erro ao atualizar para manobrista: ", error); }
+            newUserData = { ...newUserData, cnh: cnh, categoriaCnh: categoriaCnh, veiculo: veiculo };
         }
 
-        // Renderização Inicial
-        function renderApp() {
+        state.userData = newUserData;
+        state.currentUserType = userType;
+        state.userId = `localUser_${new Date().getTime()}`; // Gera um ID local simples
+        saveProfileToLocalStorage();
+        
+        registrationModal.classList.add('hidden');
+        renderApp();
+    }
+    
+    // Upgrade de Manobrista (Modificado para localStorage)
+    function handleValetUpgrade(e) {
+        e.preventDefault();
+        const cnh = document.getElementById('valet-cnh').value;
+        const categoriaCnh = document.getElementById('valet-cnh-categoria').value;
+        const veiculo = document.getElementById('valet-veiculo').value;
+        if (!cnh || !categoriaCnh || !veiculo) return;
+
+        const updatedData = {
+            userType: 'manobrista', cnh: cnh, categoriaCnh: categoriaCnh,
+            veiculo: veiculo, nivel: 'Prata'
+        };
+        
+        state.userData = { ...state.userData, ...updatedData };
+        state.currentUserType = 'manobrista';
+        saveProfileToLocalStorage();
+
+        valetModal.classList.add('hidden');
+        renderApp(); 
+        navigateTo('perfil'); 
+    }
+
+    // Renderização Inicial
+    function renderApp() {
+        loadingOverlay.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        appContainer.classList.add('flex');
+        renderSidebarLinks();
+        navigateTo('inicio');
+    }
+
+    // Setup Local
+    function initLocalApp() {
+        const profile = loadProfileFromLocalStorage();
+        if (profile) {
+            state.userData = profile;
+            state.currentUserType = profile.userType;
+            state.userId = "localUser"; // ID estático para usuário local
+            renderApp();
+        } else {
             loadingOverlay.classList.add('hidden');
-            appContainer.classList.remove('hidden');
-            appContainer.classList.add('flex');
-            renderSidebarLinks();
-            navigateTo('inicio');
+            registrationModal.classList.remove('hidden');
         }
+    }
 
-        // Setup do Firebase
-        async function initFirebase() {
-            try {
-                setLogLevel('Debug');
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        state.userId = user.uid;
-                        const profileRef = doc(db, 'artifacts', appId, 'users', state.userId, 'profile', 'data');
-                        const docSnap = await getDoc(profileRef);
-                        if (docSnap.exists()) {
-                            state.userData = docSnap.data();
-                            state.currentUserType = state.userData.userType;
-                            state.isFirebaseReady = true;
-                            renderApp();
-                        } else {
-                            loadingOverlay.classList.add('hidden');
-                            registrationModal.classList.remove('hidden');
-                        }
-                    } else {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error("Erro ao inicializar o Firebase: ", error);
-                loadingOverlay.innerHTML = "Erro ao conectar. Tente recarregar a página.";
-            }
-        }
+    // --- INICIALIZAÇÃO E EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        initLocalApp(); // Chama a função local em vez de initFirebase()
 
-        // --- INICIALIZAÇÃO E EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initFirebase();
-
-            // Listeners de Formulário
-            registrationForm.addEventListener('submit', handleRegistration);
-            valetUpgradeForm.addEventListener('submit', handleValetUpgrade);
-            
-            // Toggle campos manobrista
-            document.querySelectorAll('input[name="userType"]').forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    if (e.target.value === 'manobrista') {
-                        manobristaFields.style.display = 'block';
-                        document.getElementById('reg-cnh').required = true;
-                        document.getElementById('reg-cnh-categoria').required = true;
-                        document.getElementById('reg-veiculo').required = true;
-                    } else {
-                        manobristaFields.style.display = 'none';
-                        document.getElementById('reg-cnh').required = false;
-                        document.getElementById('reg-cnh-categoria').required = false;
-                        document.getElementById('reg-veiculo').required = false;
-                    }
-                });
-            });
-
-            // Listener de Navegação (Principal e Detalhes)
-            document.body.addEventListener('click', (e) => {
-                // Links de navegação padrão
-                const navLink = e.target.closest('.nav-link');
-                if (navLink) {
-                    e.preventDefault();
-                    navigateTo(navLink.dataset.page);
+        // Listeners de Formulário
+        registrationForm.addEventListener('submit', handleRegistration);
+        valetUpgradeForm.addEventListener('submit', handleValetUpgrade);
+        
+        // Toggle campos manobrista
+        document.querySelectorAll('input[name="userType"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'manobrista') {
+                    manobristaFields.style.display = 'block';
+                    document.getElementById('reg-cnh').required = true;
+                    document.getElementById('reg-cnh-categoria').required = true;
+                    document.getElementById('reg-veiculo').required = true;
+                } else {
+                    manobristaFields.style.display = 'none';
+                    document.getElementById('reg-cnh').required = false;
+                    document.getElementById('reg-cnh-categoria').required = false;
+                    document.getElementById('reg-veiculo').required = false;
                 }
-                
-                // Botão Voltar
-                const backBtn = e.target.closest('.btn-voltar');
-                if (backBtn) {
-                    e.preventDefault();
-                    navigateBack(); // ATUALIZADO
-                }
-
-                // Rotas de Detalhe
-                const viewReservaBtn = e.target.closest('.btn-view-reserva');
-                if (viewReservaBtn) {
-                    e.preventDefault();
-                    navigateTo('reservaDetalhe', { id: viewReservaBtn.dataset.id });
-                }
-                const viewManobraBtn = e.target.closest('.btn-view-manobra');
-                if (viewManobraBtn) {
-                    e.preventDefault();
-                    navigateTo('manobraDetalhe', { id: viewManobraBtn.dataset.id });
-                }
-
-                // Botão Reservar Vaga
-                const reservarBtn = e.target.closest('.btn-reservar-vaga');
-                if (reservarBtn && state.currentUserType === 'cliente') {
-                    e.preventDefault();
-                    handleReservarVaga(reservarBtn.dataset.id);
-                }
-                
-                // Botão Aceitar Manobra (Evento)
-                const aceitarEventoBtn = e.target.closest('.btn-aceitar-evento');
-                if (aceitarEventoBtn && state.currentUserType === 'manobrista') {
-                    e.preventDefault();
-                    handleAceitarEvento(aceitarEventoBtn.dataset.id);
-                }
-                
-                // Botão Aceitar Manobra (Mapa/Solicitação)
-                const aceitarSolicitacaoBtn = e.target.closest('.btn-aceitar-solicitacao');
-                if (aceitarSolicitacaoBtn && state.currentUserType === 'manobrista') {
-                    e.preventDefault();
-                    handleAceitarSolicitacao(aceitarSolicitacaoBtn.dataset.id);
-                }
-
-                // Botão Trocar Recompensa
-                const trocarRecompensaBtn = e.target.closest('.btn-trocar-recompensa');
-                if (trocarRecompensaBtn) {
-                    e.preventDefault();
-                    handleTrocarRecompensa(trocarRecompensaBtn.dataset.id);
-                }
-                
-                // Botão Upgrade Perfil
-                const upgradeBtn = e.target.closest('#show-valet-upgrade-btn');
-                if (upgradeBtn) {
-                    valetModal.classList.remove('hidden');
-                }
-
-                // Fechar modal de confirmação
-                const closeConfirmBtn = e.target.closest('#close-confirmation-modal');
-                if (closeConfirmBtn) {
-                    closeConfirmationModal();
-                }
-            });
-            
-            // Fechar modais clicando fora
-            [registrationModal, valetModal, confirmationModal].forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.classList.add('hidden');
-                    }
-                });
             });
         });
 
-    </script>
+        // Listener de Navegação (Principal e Detalhes)
+        document.body.addEventListener('click', (e) => {
+            // Links de navegação padrão
+            const navLink = e.target.closest('.nav-link');
+            if (navLink) {
+                e.preventDefault();
+                navigateTo(navLink.dataset.page);
+            }
+            
+            // Botão Voltar
+            const backBtn = e.target.closest('.btn-voltar');
+            if (backBtn) {
+                e.preventDefault();
+                navigateBack(); // ATUALIZADO
+            }
+
+            // Rotas de Detalhe
+            const viewReservaBtn = e.target.closest('.btn-view-reserva');
+            if (viewReservaBtn) {
+                e.preventDefault();
+                navigateTo('reservaDetalhe', { id: viewReservaBtn.dataset.id });
+            }
+            const viewManobraBtn = e.target.closest('.btn-view-manobra');
+            if (viewManobraBtn) {
+                e.preventDefault();
+                navigateTo('manobraDetalhe', { id: viewManobraBtn.dataset.id });
+            }
+
+            // Botão Reservar Vaga
+            const reservarBtn = e.target.closest('.btn-reservar-vaga');
+            if (reservarBtn && state.currentUserType === 'cliente') {
+                e.preventDefault();
+                handleReservarVaga(reservarBtn.dataset.id);
+            }
+            
+            // Botão Aceitar Manobra (Evento)
+            const aceitarEventoBtn = e.target.closest('.btn-aceitar-evento');
+            if (aceitarEventoBtn && state.currentUserType === 'manobrista') {
+                e.preventDefault();
+                handleAceitarEvento(aceitarEventoBtn.dataset.id);
+            }
+            
+            // Botão Aceitar Manobra (Mapa/Solicitação)
+            const aceitarSolicitacaoBtn = e.target.closest('.btn-aceitar-solicitacao');
+            if (aceitarSolicitacaoBtn && state.currentUserType === 'manobrista') {
+                e.preventDefault();
+                handleAceitarSolicitacao(aceitarSolicitacaoBtn.dataset.id);
+            }
+
+            // Botão Trocar Recompensa
+            const trocarRecompensaBtn = e.target.closest('.btn-trocar-recompensa');
+            if (trocarRecompensaBtn) {
+                e.preventDefault();
+                handleTrocarRecompensa(trocarRecompensaBtn.dataset.id);
+            }
+            
+            // Botão Upgrade Perfil
+            const upgradeBtn = e.target.closest('#show-valet-upgrade-btn');
+            if (upgradeBtn) {
+                valetModal.classList.remove('hidden');
+            }
+
+            // Fechar modal de confirmação
+            const closeConfirmBtn = e.target.closest('#close-confirmation-modal');
+            if (closeConfirmBtn) {
+                closeConfirmationModal();
+            }
+        });
+        
+        // Fechar modais clicando fora
+        [registrationModal, valetModal, confirmationModal].forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+</script>
+
+
 </body>
 </html>
-
-
